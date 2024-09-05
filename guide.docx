@@ -1,0 +1,143 @@
+Astro API
+Utilisation de : Astro.glob() et getStaticPaths()
+Création d'archive de billets de blog
+Mettre dans le frontmatter de la page dans laquelle on souhaite voir la liste : 
+const nom de la constance = await Astro.glob('./posts/*.md'); chemin des articles que l'on veut mettre en archive (liste)
+Dans la page où l'on souhaite voir apparaître la liste : 
+{nom de la constance.map((post) => <li><a href={post.url}>{post.frontmatter.title}</a></li>)}
+
+Générer des pages de balises 
+Créez des pages dynamiquement
+On crée un dossier tag puis un fichier avec des crochets : [tag.astro] dans lequel on importe
+un fichier de mise en page de base comme par ex BaseLayout.astro.
+Puis on exporte la fonction getStaticPaths dans le frontmatter :
+export async function getStaticPaths() {
+  return [
+    { params: { tag: "astro" } },
+    { params: { tag: "succès" } },
+    { params: { tag: "communauté" } },
+    { params: { tag: "blogging" } },
+    { params: { tag: "obstacles" } },
+    { params: { tag: "apprentissage en public" } },
+  ];
+}
+Il faut penser à mettre une balise tag sous forme de tableau dans les billets de blog.
+
+Utilisation des props dans les routes dynamiques
+Ajouter des props dans la fonction getStaticPaths
+Ex : {params: {tag: "astro"}, props: {posts: allPosts}}
+
+On rajoute les props de posts :
+const { posts } = Astro.props;
+
+Filtrer la liste de billets pour inclure les articles contenant la balise de la page :
+const filteredPosts = posts.filter((post) => post.frontmatter.tags?.includes(tag));
+
+Dans le body, mettre la structure html pour afficher une liste de billet contenant la balise : 
+<ul>
+    {filteredPosts.map((post) => <li><a href={post.url}>{post.frontmatter.title}</a></li>)}
+  </ul>
+
+  Possibilité de la factoriser en important <BlogPost> dans le fichier tag :
+   {filteredPosts.map((post) => <BlogPost url={post.url} title={post.frontmatter.title}/>)}
+
+   À retenir
+
+Si vous avez besoin d’informations pour construire les routes de page, écrivez-les à l’intérieur de la fonction getStaticPaths.
+
+Pour recevoir des informations dans le modèle HTML d’une route de page, écrivez-les à l’extérieur de getStaticPaths.
+
+Générer des pages à partir de balises existantes
+
+Les pages de balise sont définies statiquement dans [tag].astro.
+Si l'on ajoute une nouvelle balise à un billet de blog, il faut retourner sur la page [tag].astro pour mettre à jour
+les routes de page.
+
+On peut automatiser en ajoutant du code sur [tag].astro. Il recherchera et générera automatiquement des pages pour chaque 
+balise utilisée dans les billets de blog :
+
+Il faut créer une liste de toutes les balises existantes dans les différents billets à l'intérieur de getStaticPaths :
+const uniqueTags = [...new Set(allPosts.map((post) => post.frontmatter.tags).flat())];
+Puis remplacer la valeur de retour (liste de {params: {tag: "astro"}, props: {posts: allPosts}},
+  {params: {tag: "succès"}, props: {posts: allPosts}}, etc...) par :
+  return uniqueTags.map((tag) => {
+  const filteredPosts = allPosts.filter((post) => post.frontmatter.tags.includes(tag));
+  return {
+    params: { tag },
+    props: { posts: filteredPosts },
+  };
+});
+Pour filtrer la liste de tous les billets de blog avant d'être envoyée à chaque page comme props :
+ <ul>{posts.map((post) => <BlogPost url={post.url} title={post.frontmatter.title}/>)}</ul>
+
+ Créer une page répertoriant les étiquettes
+
+ Créer un nouveau fichier index.astro que l'on mettra dans le dossier tags
+ Importer <BaseLayout>
+ Transmettre un titre avec pageTitle
+
+ Créer un tableau d'étiquettes
+ Mettre dans le frontmatter astro.glob :
+ const allPosts = await Astro.glob('../posts/*.md');
+ Pour renvoyer une liste d'étiquettes uniques, mettre dans le frontmatter :
+ const tags = [...new Set(allPosts.map((post) => post.frontmatter.tags).flat())];
+
+ Mettre à l'intérieur de BaseLayout:
+ <BaseLayout pageTitle={pageTitle}>
+ <div>{tags.map((tag) => (
+      <p><a href={`/tags/${tag}`}>{tag}</a></p>
+    ))}</div>
+ </BaseLayout>
+
+ Ajoutez des styles à votre liste d'étiquettes
+ 
+ Utiliser les balises style et les inclure dans tags/index.astro
+
+ Ajouter un lien dans Navigation.astro pour faire apparaître la page tags
+
+ Inclure les étiquettes dans la mise en page de vos articles de blog
+
+ Mettre la div class="tags" et le style dans le composant MarkdownPostLayout.astro
+ Puis dans le code de la div, mettre frontmatter.tags.map... =>
+
+     <div class="tags">
+      {frontmatter.tags.map((tag) => (
+        <p class="tag"><a href={`/tags/${tag}`}>{tag}</a></p>
+      ))}
+    </div>
+
+    <style>
+  a {
+    color: #00539F;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    margin: 0.25em;
+    border: dotted 1px #a1a1a1;
+    border-radius: .5em;
+    padding: .5em 1em;
+    font-size: 1.15em;
+    background-color: #F8FCFD;
+  }
+</style>
+
+Ajouter un flux RSS
+
+Installer le package RSS d'Astro
+
+npm install @astrojs/rss
+
+
+
+
+
+
+
+
+Créer une page répertoriant les étiquettes :
+https://docs.astro.build/fr/tutorial/5-astro-api/3/
