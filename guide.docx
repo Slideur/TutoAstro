@@ -134,10 +134,5 @@ npm install @astrojs/rss
 
 
 
-
-
-
-
-
-Créer une page répertoriant les étiquettes :
-https://docs.astro.build/fr/tutorial/5-astro-api/3/
+Ajouter un flux RSS :
+https://docs.astro.build/fr/tutorial/5-astro-api/4/
